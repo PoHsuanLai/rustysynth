@@ -296,7 +296,7 @@ impl Voice {
         }
     }
 
-    pub(crate) fn block(&self) -> &Vec<f32> {
+    pub(crate) fn block(&self) -> &[f32] {
         &self.block
     }
 
