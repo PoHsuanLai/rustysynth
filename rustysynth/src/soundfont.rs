@@ -13,7 +13,7 @@ use crate::soundfont_parameters::SoundFontParameters;
 use crate::soundfont_sampledata::SoundFontSampleData;
 use crate::LoopMode;
 
-/// Reperesents a SoundFont.
+/// Parsed SoundFont (.sf2) containing samples, instruments, and presets.
 #[derive(Debug)]
 #[non_exhaustive]
 pub struct SoundFont {
@@ -26,11 +26,6 @@ pub struct SoundFont {
 }
 
 impl SoundFont {
-    /// Loads a SoundFont from the stream.
-    ///
-    /// # Arguments
-    ///
-    /// * `reader` - The data stream used to load the SoundFont.
     pub fn new<R: Read>(reader: &mut R) -> Result<Self, SoundFontError> {
         let chunk_id = BinaryReader::read_four_cc(reader)?;
         if chunk_id != b"RIFF" {
@@ -93,17 +88,14 @@ impl SoundFont {
         Ok(())
     }
 
-    /// Gets the information of the SoundFont.
     pub fn get_info(&self) -> &SoundFontInfo {
         &self.info
     }
 
-    /// Gets the bits per sample of the sample data.
     pub fn get_bits_per_sample(&self) -> i32 {
         self.bits_per_sample
     }
 
-    /// Gets the sample data.
     pub fn get_wave_data(&self) -> &[i16] {
         &self.wave_data[..]
     }

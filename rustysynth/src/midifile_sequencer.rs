@@ -7,7 +7,7 @@ use crate::midifile::Message;
 use crate::midifile::MidiFile;
 use crate::synthesizer::Synthesizer;
 
-/// An instance of the MIDI file sequencer.
+/// Plays a MIDI file through a synthesizer, handling tempo and looping.
 #[derive(Debug)]
 #[non_exhaustive]
 pub struct MidiFileSequencer {
@@ -26,11 +26,6 @@ pub struct MidiFileSequencer {
 }
 
 impl MidiFileSequencer {
-    /// Initializes a new instance of the sequencer.
-    ///
-    /// # Arguments
-    ///
-    /// * `synthesizer` - The synthesizer to be handled by the sequencer.
     pub fn new(synthesizer: Synthesizer) -> Self {
         Self {
             synthesizer,
@@ -44,12 +39,6 @@ impl MidiFileSequencer {
         }
     }
 
-    /// Plays the MIDI file.
-    ///
-    /// # Arguments
-    ///
-    /// * `midi_file` - The MIDI file to be played.
-    /// * `play_loop` - If `true`, the MIDI file loops after reaching the end.
     pub fn play(&mut self, midi_file: &Arc<MidiFile>, play_loop: bool) {
         self.midi_file = Some(Arc::clone(midi_file));
         self.play_loop = play_loop;
@@ -63,22 +52,12 @@ impl MidiFileSequencer {
         self.synthesizer.reset()
     }
 
-    /// Stops playing.
     pub fn stop(&mut self) {
         self.midi_file = None;
         self.synthesizer.reset();
     }
 
-    /// Renders the waveform.
-    ///
-    /// # Arguments
-    ///
-    /// * `left` - The buffer of the left channel to store the rendered waveform.
-    /// * `right` - The buffer of the right channel to store the rendered waveform.
-    ///
-    /// # Remarks
-    ///
-    /// The output buffers for the left and right must be the same length.
+    /// Renders interleaved stereo audio. Both buffers must be the same length.
     pub fn render(&mut self, left: &mut [f32], right: &mut [f32]) {
         if left.len() != right.len() {
             panic!("The output buffers for the left and right must be the same length.");
@@ -155,12 +134,10 @@ impl MidiFileSequencer {
         }
     }
 
-    /// Gets the synthesizer handled by the sequencer.
     pub fn get_synthesizer(&self) -> &Synthesizer {
         &self.synthesizer
     }
 
-    /// Gets the currently playing MIDI file.
     pub fn get_midi_file(&self) -> Option<&MidiFile> {
         match &self.midi_file {
             None => None,
@@ -168,17 +145,13 @@ impl MidiFileSequencer {
         }
     }
 
-    /// Gets the current playback position in seconds.
+    /// Current playback position in seconds.
     pub fn get_position(&self) -> f64 {
         self.current_time
     }
 
-    /// Gets a value that indicates whether the current playback position is at the end of the sequence.
-    ///
-    /// # Remarks
-    ///
-    /// If the `play` method has not yet been called, this value will be `true`.
-    /// This value will never be `true` if loop playback is enabled.
+    /// Returns `true` if playback has reached the end (or `play` was never called).
+    /// Always `false` when looping is enabled.
     pub fn end_of_sequence(&self) -> bool {
         match &self.midi_file {
             None => true,
@@ -186,21 +159,12 @@ impl MidiFileSequencer {
         }
     }
 
-    /// Gets the current playback speed.
-    ///
-    /// # Remarks
-    ///
-    /// The default value is 1.
-    /// The tempo will be multiplied by this value during playback.
+    /// Playback speed multiplier (default 1.0).
     pub fn get_speed(&self) -> f64 {
         self.speed
     }
 
-    /// Sets the playback speed.
-    ///
-    /// # Remarks
-    ///
-    /// The value must be non-negative.
+    /// Sets the playback speed. Must be non-negative.
     pub fn set_speed(&mut self, value: f64) {
         if value < 0.0 {
             panic!("The playback speed must be a non-negative value.");
