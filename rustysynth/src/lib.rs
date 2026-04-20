@@ -1,3 +1,5 @@
+#![allow(clippy::collapsible_match)]
+
 mod error;
 
 mod array_math;
